@@ -1,5 +1,7 @@
 /**
  * تتبّع المنشور النشِط + توهّج التمييز.
+ * ملاحظة مهمة: عدة لوحات تبقى مركّبة معاً (Keep-Alive) ويُخفى غير النشِط بـ display:none،
+ * فيوجد أكثر من عنصر بنفس المعرّف post-<id> — لذلك نختار النسخة المرئية دائماً.
  * يُستخدم من: الفيد (تركيب المستمع) وسهم العودة للأعلى (قراءة المنشور الحالي).
  * سبب وجوده: زر التعديل / عرض المزيد / تشغيل ميديا كلها داخل PostCard، وهذا الملف يمنحنا
  * نقطة واحدة نعرف منها أي منشور يتفاعل معه المستخدم دون تعديل ملف المنشور الضخم.
@@ -26,10 +28,30 @@ export const clearGlow = () => {
   });
 };
 
+/**
+ * يعيد نسخة المنشور الظاهرة فعلياً على الشاشة.
+ *
+ * لماذا هذا ضروري: App.tsx يبقي عدة لوحات مركّبة معاً (Keep-Alive) ويُخفي غير النشِط
+ * بـ display:none، فيوجد أكثر من عنصر بنفس المعرّف post-<id> في الصفحة. ودالة
+ * document.getElementById تُعيد أول نسخة في ترتيب الصفحة — وهي غالباً نسخة اللوحة العامة
+ * المخفية — لذلك كان التوهّج يظهر في اللوحات العامة وحدها ولا يظهر في اللوحات الفرعية.
+ * الحل: نبحث عن النسخة المرئية (offsetParent !== null).
+ */
+export const findPostElement = (postId: string | null): HTMLElement | null => {
+  if (!postId) return null;
+  const wanted = 'post-' + postId;
+  // لا نستخدم getElementById لأنها تُعيد أول تطابق (قد يكون داخل لوحة مخفية).
+  const matches = Array.from(document.querySelectorAll<HTMLElement>('[id^="post-"]')).filter(
+    (el) => el.id === wanted
+  );
+  if (matches.length === 0) return null;
+  // offsetParent === null يعني أن العنصر أو أحد آبائه display:none (لوحة غير نشِطة)
+  return matches.find((el) => el.offsetParent !== null) || null;
+};
+
 export const glowPost = (postId: string | null) => {
   clearGlow();
-  if (!postId) return false;
-  const el = document.getElementById('post-' + postId);
+  const el = findPostElement(postId);
   if (!el) return false;
   el.classList.add(isDarkUi() ? GLOW_DARK : GLOW_LIGHT);
   return true;
