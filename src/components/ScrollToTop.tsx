@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { getActivePost, glowPost } from '../lib/activePost';
+import { getActivePost, glowPost, findPostElement } from '../lib/activePost';
 
 export default function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
@@ -43,7 +43,7 @@ export default function ScrollToTop() {
   // نقرة واحدة: اذهب إلى المنشور الذي نقف عليه (تعديل / عرض المزيد / تشغيل ميديا)
   const scrollToActivePost = () => {
     const postId = getActivePost();
-    const el = postId ? document.getElementById(`post-${postId}`) : null;
+    const el = findPostElement(postId);
     if (!el) {
       scrollToTop();
       return;
