@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+@import "yet-another-react-lightbox/styles.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Noto Sans Arabic", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-natural-bg: #F9FAF8;
+  --color-natural-text: #2D2D2A;
+  --color-natural-primary: #5A5A40;
+  --color-natural-border: #E8EAE3;
+  --color-natural-muted: #8C8C70;
+  --color-natural-secondary-bg: #F3F4F0;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html, body, button, input, select, textarea, span, p, h1, h2, h3, h4, h5, h6, div, label {
+  font-family: "Noto Sans Arabic", "Inter", ui-sans-serif, system-ui, sans-serif !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* تقليل الفراغ حول الصورة المكبرة في Lightbox وزيادة مساحة العرض للجوال والكمبيوتر */
+.yarl__container {
+  --yarl__carousel_slides_padding: 0px !important;
+  --yarl__slide_image_padding: 0px !important;
+  --yarl__controller_padding: 0px !important;
+}
+
+.yarl__slide {
+  padding: 64px 16px !important; /* الهامش متناسق ومتماثل عمودياً لتجنب مشاكل حسابات التكبير والتحريك في الزوم */
+}
+
+.yarl__slide_image {
+  padding: 0px !important;
+}
+
+/* تقريب أدوات الصورة (التكبير والتصغير والإلغاء) من الزاوية لتقليص الفراغ العلوي والجانبي */
+.yarl__toolbar {
+  padding: 2px 4px !important;
+  gap: 2px !important;
+}
+
+.yarl__button {
+  padding: 2px !important;
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* التأكد من عدم وجود هوامش مفرطة لأزرار التنقل */
+.yarl__navigation_prev, .yarl__navigation_next {
+  padding: 4px !important;
+}
+
+/* حركة النبض لزر لوحات كاملة */
+@keyframes pulse-light {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.2);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 6px rgba(21, 128, 61, 0);
+  }
+}
+
+@keyframes pulse-dark {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(67, 208, 84, 0.2);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 6px rgba(67, 208, 84, 0);
+  }
+}
+
+.pulsate-btn-light {
+  animation: pulse-light 2.2s infinite ease-in-out;
+}
+
+.pulsate-btn-dark {
+  animation: pulse-dark 2.2s infinite ease-in-out;
+}
+
+/* حركة النبض لزر تجربة البرومبت */
+@keyframes pulse-orange {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 6px -1px rgba(194, 103, 0, 0.1), 0 2px 4px -1px rgba(194, 103, 0, 0.06), 0 0 0 0 rgba(194, 103, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 4px 6px -1px rgba(194, 103, 0, 0.15), 0 2px 4px -1px rgba(194, 103, 0, 0.1), 0 0 0 6px rgba(194, 103, 0, 0);
+  }
+}
+
+@keyframes pulse-cyan {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 6px -1px rgba(77, 208, 225, 0.1), 0 2px 4px -1px rgba(77, 208, 225, 0.06), 0 0 0 0 rgba(77, 208, 225, 0.3);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 4px 6px -1px rgba(77, 208, 225, 0.15), 0 2px 4px -1px rgba(77, 208, 225, 0.1), 0 0 0 6px rgba(77, 208, 225, 0);
+  }
+}
+
+.pulsate-prompt-light {
+  animation: pulse-orange 2s infinite ease-in-out;
+}
+
+.pulsate-prompt-dark {
+  animation: pulse-cyan 2s infinite ease-in-out;
+}
+
+
+
+/* ============================================================================
+ * توهّج المنشور النشِط — مرتبط بسهم الأعلى (نقرة واحدة تذهب إليه).
+ * الداكن: لون المظهر الداكن (أخضر مزرق #008D75) — الفاتح: أرجواني متوهّج.
+ * ========================================================================== */
+.post-active-glow-light {
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.65), 0 0 28px 8px rgba(139, 92, 246, 0.38);
+  background-color: rgba(139, 92, 246, 0.07);
+  border-radius: 1rem;
+  transition: box-shadow 0.35s ease, background-color 0.35s ease;
+}
+.post-active-glow-dark {
+  box-shadow: 0 0 0 2px rgba(0, 141, 117, 0.7), 0 0 28px 8px rgba(0, 141, 117, 0.38);
+  background-color: rgba(0, 141, 117, 0.09);
+  border-radius: 1rem;
+  transition: box-shadow 0.35s ease, background-color 0.35s ease;
+}

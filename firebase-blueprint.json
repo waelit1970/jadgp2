@@ -1,0 +1,178 @@
+{
+  "entities": {
+    "Post": {
+      "title": "Post",
+      "description": "A post containing an image and text, part of a specific board.",
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The textual content of the post."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "An image URL."
+        },
+        "imageUrls": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Multiple image URLs."
+        },
+        "imageModels": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "The AI model used to generate each image."
+        },
+        "boardId": {
+          "type": "string",
+          "description": "The ID of the board this post belongs to."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the post was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the post was last updated."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "The UID of the admin."
+        },
+        "authorEmail": {
+          "type": "string",
+          "description": "The email of the admin."
+        }
+      },
+      "required": ["text", "boardId", "createdAt", "authorId"]
+    },
+    "Board": {
+      "title": "Board",
+      "description": "A category or collection of posts.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The display name of the board."
+        },
+        "order": {
+          "type": "number",
+          "description": "The display order of the board."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp."
+        },
+        "locked": {
+          "type": "boolean",
+          "description": "Whether the board is locked for premium/active users only."
+        }
+      },
+      "required": ["name", "order", "createdAt"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global settings for trial periods and licensing.",
+      "type": "object",
+      "properties": {
+        "ownerEmail": {
+          "type": "string",
+          "description": "Owner email address."
+        },
+        "trialDays": {
+          "type": "number",
+          "description": "Default trial days."
+        },
+        "allFree": {
+          "type": "boolean",
+          "description": "Whether full access is temporarily gifted to everyone."
+        }
+      },
+      "required": ["ownerEmail", "trialDays", "allFree"]
+    },
+    "License": {
+      "title": "License",
+      "description": "User subscription and trial license record.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "User email address."
+        },
+        "activationCode": {
+          "type": "string",
+          "description": "6-digit random activation code."
+        },
+        "activated": {
+          "type": "boolean",
+          "description": "True if user activated full version."
+        },
+        "trialStartDate": {
+          "type": "number",
+          "description": "Timestamp when user first logged in."
+        },
+        "expiryDate": {
+          "type": "number",
+          "description": "Optional custom expiration timestamp."
+        },
+        "activatedAt": {
+          "type": "number",
+          "description": "Timestamp when activation code was entered."
+        }
+      },
+      "required": ["email", "activationCode", "activated", "trialStartDate"]
+    },
+    "RecycleBinItem": {
+      "title": "RecycleBinItem",
+      "description": "A deleted post, board, or prompt moved to the recycle bin.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["post", "board", "prompt"],
+          "description": "The type of deleted item."
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the item was moved to the recycle bin."
+        },
+        "deletedFrom": {
+          "type": "string",
+          "description": "Where the item was deleted from (e.g. board name or Prompt Builder)."
+        },
+        "data": {
+          "type": "object",
+          "description": "The payload data of the deleted item."
+        }
+      },
+      "required": ["type", "deletedAt", "deletedFrom", "data"]
+    }
+  },
+  "firestore": {
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Collection for all posts."
+    },
+    "/boards/{boardId}": {
+      "schema": "Board",
+      "description": "Collection for categories/boards."
+    },
+    "/recycle_bin/{itemId}": {
+      "schema": "RecycleBinItem",
+      "description": "Collection for deleted items."
+    },
+    "/settings/{settingsId}": {
+      "schema": "Settings",
+      "description": "Global settings for trial periods and licensing."
+    },
+    "/licenses/{licenseId}": {
+      "schema": "License",
+      "description": "User trial and activation license documents."
+    }
+  }
+}

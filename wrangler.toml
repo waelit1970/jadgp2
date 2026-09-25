@@ -1,0 +1,22 @@
+# إعدادات Cloudflare Worker — تُقرأ تلقائياً عند النشر من GitHub أو بـ npx wrangler deploy
+name = "jadgpt"
+main = "worker/index.js"
+compatibility_date = "2026-09-25"
+
+# أمر البناء الذي ينفّذه Cloudflare قبل النشر
+[build]
+command = "npm run build"
+
+# الأصول الثابتة: ناتج Vite في dist (الموقع + sw.js + الأيقونات)
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# ملاحظة (2026-09): أُزيل كل اعتماد على Cloudflare R2 من التطبيق.
+# لا توجد كتلة [[r2_buckets]] ولا متغيرات R2_* — الفشل السابق كان بسبب محاولة ربط دلو
+# غير موجود (jadgpt-media)، وبعد الإزالة لا يحتاج النشر أي تخزين خارجي إطلاقاً.
+# الملفات المستخرجة من الروابط: catbox.moe كمسار احتياطي، ثم النقل المضمّن (base64).
+
+[observability]
+enabled = true

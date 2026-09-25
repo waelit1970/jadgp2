@@ -1,0 +1,45 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/translate"
+  to = "/.netlify/functions/translate"
+  status = 200
+
+[[redirects]]
+  from = "/api/r2/presign-upload"
+  to = "/.netlify/functions/r2-presign"
+  status = 200
+
+[[redirects]]
+  from = "/api/r2/delete"
+  to = "/.netlify/functions/r2-delete"
+  status = 200
+
+[[redirects]]
+  from = "/api/download"
+  to = "/.netlify/functions/download"
+  status = 200
+
+[[redirects]]
+  from = "/api/extract-video"
+  to = "/.netlify/functions/extract-video"
+  status = 200
+
+[[redirects]]
+  from = "/api/download-extracted-video"
+  to = "/.netlify/functions/download-extracted-video"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+

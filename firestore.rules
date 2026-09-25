@@ -1,0 +1,120 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'alwaelai2000@gmail.com' ||
+        (exists(/databases/$(database)/documents/settings/global) && 
+         get(/databases/$(database)/documents/settings/global).data.get('ownerEmail', '').lower() == request.auth.token.email.lower())
+      );
+    }
+
+    function ownsEmail(email) {
+      return isSignedIn() && request.auth.token.email.lower() == email.lower();
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Blueprints ---
+    function isValidBoard(data) {
+      return data.get('name', '') is string && 
+             data.get('name', '').size() > 0 && 
+             data.get('name', '').size() <= 200 &&
+             (data.get('order', 0) is number) &&
+             (data.get('locked', false) is bool) &&
+             (data.get('hidden', false) is bool);
+    }
+
+    function isValidPost(data) {
+      return data.get('text', '') is string && 
+             data.get('text', '').size() <= 100000 &&
+             (data.get('imageUrl', null) == null || data.get('imageUrl', null) is string) &&
+             (data.get('imageUrls', []) is list) &&
+             (data.get('imageModels', []) is list) &&
+             (data.get('imageCaptions', []) is list) &&
+             (data.get('fileNames', []) is list) &&
+             (data.get('fileTypes', []) is list) &&
+             (data.get('fileSizes', []) is list) &&
+             (data.get('boardId', null) == null || data.get('boardId', null) is string) &&
+             (data.get('subBoardId', null) == null || data.get('subBoardId', null) is string) &&
+             (data.get('isPinned', null) == null || data.get('isPinned', null) is bool);
+    }
+
+    // --- Collections ---
+    // SECURITY FIX (2026-09): encryption keys & Google OAuth refresh tokens were world-readable AND
+    // world-writable (`if true`). They are now restricted to their owner only.
+    match /user_keys/{email} {
+      allow read, write: if ownsEmail(email);
+    }
+
+    match /user_tokens/{email} {
+      allow read, write: if ownsEmail(email);
+    }
+
+    match /settings/{settingsId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /licenses/{licenseId} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.token.email.lower() == licenseId.lower());
+      allow write: if isAdmin() || (
+        isSignedIn() && 
+        request.auth.token.email.lower() == licenseId.lower()
+      );
+    }
+
+    match /boards/{boardId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /posts/{postId} {
+      // Public read for the feed
+      allow read: if true;
+
+      // SECURITY FIX (2026-09): previously ANY signed-in user could edit or delete ANY post.
+      // Authors may now only touch their own posts; the admin may touch all.
+      allow create: if isValidPost(incoming()) && (isAdmin() ||
+        (isSignedIn() && incoming().get('authorEmail', '').lower() == request.auth.token.email.lower()));
+
+      allow update: if isValidPost(incoming()) && (isAdmin() ||
+        (isSignedIn() &&
+         existing().get('authorEmail', '').lower() == request.auth.token.email.lower() &&
+         incoming().get('authorEmail', '').lower() == request.auth.token.email.lower()));
+
+      allow delete: if isAdmin() ||
+        (isSignedIn() && existing().get('authorEmail', '').lower() == request.auth.token.email.lower());
+    }
+
+    match /recycle_bin/{itemId} {
+      allow read, write: if isAdmin() || isSignedIn();
+    }
+  }
+}
+
