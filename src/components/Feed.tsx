@@ -21,6 +21,8 @@ interface FeedProps {
   isAdmin: boolean;
   boardId: string | null;
   subBoardId?: string | null;
+  /** هل اللوحة نشِطة الآن؟ اللوحات غير النشِطة تبقى في DOM بلا أي قراءة من Firestore. */
+  isActive?: boolean;
   boards: Board[];
   onTestPrompt: (text: string) => void;
   isDarkMode?: boolean;
@@ -58,7 +60,7 @@ const matchSubBoard = (postSubBoardId?: string | null, activeSubBoardId?: string
   return canonicalKey(postSubBoardId) === canonicalKey(activeSubBoardId);
 };
 
-export default function Feed({ isAdmin, boardId, subBoardId, boards, onTestPrompt, isDarkMode, onSelectBoard }: FeedProps) {
+export default function Feed({ isAdmin, boardId, subBoardId, boards, onTestPrompt, isDarkMode, onSelectBoard, isActive = true }: FeedProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -324,6 +326,14 @@ export default function Feed({ isAdmin, boardId, subBoardId, boards, onTestPromp
 
     const postsCollection = collection(db, 'posts');
     
+    // حماية حصة القراءة (2026-09): اللوحات غير النشِطة تحتفظ بالـ DOM (Keep-Alive) بلا أي قراءة.
+    // قبل ذلك كان لكل لوحة زُرتها مشترك حيّ يقرأ استعلامه كاملاً — وفرع اللوحة الرئيسية بلا
+    // where وبلا limit — فتُستهلك الحصة المجانية (50,000 قراءة/يوم) بمجرّد فتح التطبيق والتنقّل.
+    if (isActive === false) {
+      setLoading(false);
+      return;
+    }
+
     const q = boardId
       ? query(postsCollection, where('boardId', '==', boardId))
       : postsCollection;
@@ -369,7 +379,9 @@ export default function Feed({ isAdmin, boardId, subBoardId, boards, onTestPromp
     });
 
     return () => unsubscribe();
-  }, [boardId, subBoardId, boards, isAdmin]);
+    // اعتماد على مفتاح نصّي مستقر بدل هوية مصفوفة boards المتغيّرة في كل إعادة رسم:
+    // بدون ذلك يُلغى المشترك ويُنشأ من جديد = إعادة قراءة الاستعلام كاملاً بلا داعٍ.
+  }, [boardId, subBoardId, (boards || []).map((b) => `${b.id}:${b.hidden ? 1 : 0}`).join('|'), isAdmin, isActive]);
 
   // 2. جلب منشورات البحث الشامل — كسول: لا يبدأ إلا عند بحث فعلي (حرفان أو أكثر)
   useEffect(() => {
