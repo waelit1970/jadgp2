@@ -604,6 +604,7 @@ export default function App() {
                       isAdmin={isAdmin} 
                       boardId={b.boardId} 
                       subBoardId={b.subBoardId}
+                      isActive={isBoardActive}
                       boards={visibleBoards} 
                       onTestPrompt={() => {}} 
                       isDarkMode={isDarkMode}
