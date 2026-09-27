@@ -3,15 +3,12 @@
  * ملاحظة مهمة: عدة لوحات تبقى مركّبة معاً (Keep-Alive) ويُخفى غير النشِط بـ display:none،
  * فيوجد أكثر من عنصر بنفس المعرّف post-<id> — لذلك نختار النسخة المرئية دائماً.
  * يُستخدم من: الفيد (تركيب المستمع) وسهم العودة للأعلى (قراءة المنشور الحالي).
- * سبب وجوده: زر التعديل / عرض المزيد / تشغيل ميديا كلها داخل PostCard، وهذا الملف يمنحنا
- * نقطة واحدة نعرف منها أي منشور يتفاعل معه المستخدم دون تعديل ملف المنشور الضخم.
+ * سبب وجوده: جسم المنشور وأزراره كلها داخل PostCard، وهذا الملف يمنحنا نقطة واحدة
+ * نعرف منها أي منشور يتفاعل معه المستخدم دون تعديل ملف المنشور الضخم.
  */
 const ACTIVE_KEY = '__jadgptActivePostId';
 const GLOW_LIGHT = 'post-active-glow-light';
 const GLOW_DARK = 'post-active-glow-dark';
-
-// كلمات تدل على الأفعال المطلوب تمييز منشورها
-const ACTION_WORDS = ['تعديل', 'المزيد', 'عرض المزيد', 'تشغيل', 'play', 'edit', 'more', 'media'];
 
 export const setActivePost = (postId: string | null) => {
   (window as any)[ACTIVE_KEY] = postId;
@@ -58,7 +55,7 @@ export const glowPost = (postId: string | null) => {
 };
 
 let installed = false;
-/** مستمع واحد على مستوى الصفحة يمنح المنشور توهّجاً عند التعديل/المزيد/تشغيل الميديا. */
+/** مستمع واحد على مستوى الصفحة: أي نقرة داخل جسم المنشور تمنحه التوهّج وتجعله المنشور النشِط. */
 export const installPostHighlight = () => {
   if (installed) return () => {};
   installed = true;
@@ -68,21 +65,9 @@ export const installPostHighlight = () => {
     if (!target || typeof target.closest !== 'function') return;
     const card = target.closest('[id^="post-"]') as HTMLElement | null;
     if (!card) return;
-    const clickable = target.closest('button, a, [role="button"]') as HTMLElement | null;
-    if (!clickable) return;
-
-    const haystack = [
-      clickable.getAttribute('title') || '',
-      clickable.getAttribute('aria-label') || '',
-      clickable.textContent || '',
-      String(clickable.className || ''),
-    ]
-      .join(' ')
-      .toLowerCase();
-
-    if (!ACTION_WORDS.some((w) => haystack.includes(w.toLowerCase()))) return;
-
+    // أي نقرة داخل جسم المنشور تُعيّنه: بلا شرط زر تفاعلي وبلا كلمات مفتاحية.
     const postId = card.id.replace(/^post-/, '');
+    if (!postId) return;
     glowPost(postId);
     setActivePost(postId);
   };
